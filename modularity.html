@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- START SIGMA IMPORTS -->
+    <script src="./sigma.js/src/sigma.core.js"></script>
+    <script src="./sigma.js/src/conrad.js"></script>
+    <script src="./sigma.js/src/utils/sigma.utils.js"></script>
+    <script src="./sigma.js/src/utils/sigma.polyfills.js"></script>
+    <script src="./sigma.js/src/sigma.settings.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.dispatcher.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.configurable.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.graph.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.camera.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.quad.js"></script>
+    <script src="./sigma.js/src/classes/sigma.classes.edgequad.js"></script>
+    <script src="./sigma.js/src/captors/sigma.captors.mouse.js"></script>
+    <script src="./sigma.js/src/captors/sigma.captors.touch.js"></script>
+    <script src="./sigma.js/src/renderers/sigma.renderers.canvas.js"></script>
+    <script src="./sigma.js/src/renderers/sigma.renderers.webgl.js"></script>
+    <script src="./sigma.js/src/renderers/sigma.renderers.svg.js"></script>
+    <script src="./sigma.js/src/renderers/sigma.renderers.def.js"></script>
+    <script src="./sigma.js/src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+    <script src="./sigma.js/src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+    <script src="./sigma.js/src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+    <script src="./sigma.js/src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+    <script src="./sigma.js/src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+    <script src="./sigma.js/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.utils.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.nodes.def.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.edges.def.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.edges.curve.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.labels.def.js"></script>
+    <script src="./sigma.js/src/renderers/svg/sigma.svg.hovers.def.js"></script>
+    <script src="./sigma.js/src/middlewares/sigma.middlewares.rescale.js"></script>
+    <script src="./sigma.js/src/middlewares/sigma.middlewares.copy.js"></script>
+    <script src="./sigma.js/src/misc/sigma.misc.animation.js"></script>
+    <script src="./sigma.js/src/misc/sigma.misc.bindEvents.js"></script>
+    <script src="./sigma.js/src/misc/sigma.misc.bindDOMEvents.js"></script>
+    <script src="./sigma.js/src/misc/sigma.misc.drawHovers.js"></script>
+    <!-- END SIGMA IMPORTS -->
+    <script src="./sigma.js/plugins/sigma.parsers.json/sigma.parsers.json.js"></script>
+    <script src="./sigma.js/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
+
+    <meta charset="UTF-8">
+    <title>계유정난</title>
+    <style>
+        body {
+            font: 10px sans-serif;
+            background-color:#f8f8f8;
+        }
+    </style>
+</head>
+<div>
+    <h1 align="center">계유정난 전후 인물간 커뮤니케이션 네트워크<br>(Community Detection)</h1>
+</div>
+
+<div id="container">
+    <h1 style="position: absolute; top: 10%;">Group</h1>
+    <style>
+        #graph-container {
+            width:50%;
+            height:80%;
+            border:1px solid;
+            top: 10%;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: absolute;
+        }
+    </style>
+    <div id="graph-container"></div>
+</div>
+<div id="container2">
+    <h1 style="position: absolute; left:51%; top: 10%;">Community Detection</h1>
+    <style>
+        #graph-container2 {
+            width:50%;
+            height:80%;
+            border:1px solid;
+            top: 10%;
+            bottom: 0;
+            left: 50%;
+            right: 0;
+            position: absolute;
+        }
+    </style>
+    <div id="graph-container2"></div>
+</div>
+
+<script>
+
+    sigma.classes.graph.addMethod('neighbors', function(nodeId) {
+        var k,
+            neighbors = {},
+            index = this.allNeighborsIndex[nodeId] || {};
+
+        for (k in index)
+            neighbors[k] = this.nodesIndex[k];
+
+        return neighbors;
+    });
+    sigma.parsers.json('group.json', {
+            container: 'graph-container'
+        },
+        function(s) {
+            var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+            dragListener.bind('startdrag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drop', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('dragend', function(event) {
+                console.log(event);
+            });
+            // We first need to save the original colors of our
+            // nodes and edges, like this:
+            s.graph.nodes().forEach(function(n) {
+                n.originalColor = n.color;
+            });
+            s.graph.edges().forEach(function(e) {
+                e.originalColor = e.color;
+            });
+
+            // When a node is clicked, we check for each node
+            // if it is a neighbor of the clicked one. If not,
+            // we set its color as grey, and else, it takes its
+            // original color.
+            // We do the same for the edges, and we only keep
+            // edges that have both extremities colored.
+            s.bind('clickNode', function(e) {
+                var nodeId = e.data.node.id,
+                    toKeep = s.graph.neighbors(nodeId);
+                toKeep[nodeId] = e.data.node;
+
+                s.graph.nodes().forEach(function(n) {
+                    if (toKeep[n.id])
+                        n.color = n.originalColor;
+                    else
+                        n.color = '#eee';
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    if (toKeep[e.source] && toKeep[e.target])
+                        e.color = e.originalColor;
+                    else
+                        e.color = '#eee';
+                });
+
+                // Since the data has been modified, we need to
+                // call the refresh method to make the colors
+                // update effective.
+                s.refresh();
+            });
+
+            // When the stage is clicked, we just color each
+            // node and edge with its original color.
+            s.bind('clickStage', function(e) {
+                s.graph.nodes().forEach(function(n) {
+                    n.color = n.originalColor;
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    e.color = e.originalColor;
+                });
+
+                // Same as in the previous event:
+                s.refresh();
+            });
+        }
+    );
+
+</script>
+<script>
+
+    sigma.parsers.json('modularity.json', {
+            container: 'graph-container2'
+        },
+        function(s) {
+            var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+            dragListener.bind('startdrag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drop', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('dragend', function(event) {
+                console.log(event);
+            });
+            // We first need to save the original colors of our
+            // nodes and edges, like this:
+            s.graph.nodes().forEach(function(n) {
+                n.originalColor = n.color;
+            });
+            s.graph.edges().forEach(function(e) {
+                e.originalColor = e.color;
+            });
+
+            // When a node is clicked, we check for each node
+            // if it is a neighbor of the clicked one. If not,
+            // we set its color as grey, and else, it takes its
+            // original color.
+            // We do the same for the edges, and we only keep
+            // edges that have both extremities colored.
+            s.bind('clickNode', function(e) {
+                var nodeId = e.data.node.id,
+                    toKeep = s.graph.neighbors(nodeId);
+                toKeep[nodeId] = e.data.node;
+
+                s.graph.nodes().forEach(function(n) {
+                    if (toKeep[n.id])
+                        n.color = n.originalColor;
+                    else
+                        n.color = '#eee';
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    if (toKeep[e.source] && toKeep[e.target])
+                        e.color = e.originalColor;
+                    else
+                        e.color = '#eee';
+                });
+
+                // Since the data has been modified, we need to
+                // call the refresh method to make the colors
+                // update effective.
+                s.refresh();
+            });
+
+            // When the stage is clicked, we just color each
+            // node and edge with its original color.
+            s.bind('clickStage', function(e) {
+                s.graph.nodes().forEach(function(n) {
+                    n.color = n.originalColor;
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    e.color = e.originalColor;
+                });
+
+                // Same as in the previous event:
+                s.refresh();
+            });
+        }
+    );
+</script>
+<style>
+
+    /* basic positioning */
+    .legend { list-style: none; }
+    .legend {position: absolute;
+        top:90%;
+        left:30%;
+        border-width: 0;}
+
+    .legend li { float: left; margin-right: 50px; font-size:15px;}
+    .legend span { border: 0px solid #ccc; float: left; width: 12px; height: 12px; margin: 2px; }
+    /* your colors */
+    .legend .one { background-color: #1f77b4; }
+    .legend .two { background-color: #17becf; }
+    .legend .three { background-color: #fec331; }
+    .legend .four { background-color: #d62728; }
+    .legend .five { background-color: #9467bd; }
+    .ul{
+        margin:auto;
+    }
+
+</style>
+<div class = 'ul'>
+    <ul class="legend">
+        <li><span class="one"></span> 안평대군파(숙청) </li>
+        <li><span class="two"></span> 안평대군파(처벌) </li>
+        <li><span class="three"></span> 중립 </li>
+        <li><span class="four"></span> 정난공신 </li>
+        <li><span class="five"></span> 사육신 </li>
+
+    </ul>
+</div>
+<input type="button" onclick="location.href='../vis/vis.html';"
+       value="Next" style="position: absolute; top:5%; left: 95%;" />
+<input type="button" onclick="location.href='dynamic.html';"
+       value="Previous" style="position: absolute; top:5%; left: 90%;" />
+</body>
+</html>
