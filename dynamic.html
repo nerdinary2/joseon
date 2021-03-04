@@ -48,119 +48,28 @@
     <script src="./sigma.js/src/misc/sigma.misc.bindEvents.js"></script>
     <script src="./sigma.js/src/misc/sigma.misc.bindDOMEvents.js"></script>
     <script src="./sigma.js/src/misc/sigma.misc.drawHovers.js"></script>
-    <script src="./sigma.js/plugins/sigma.plugins.tooltips/sigma.plugins.tooltips.js"></script>
+    <!-- END SIGMA IMPORTS -->
     <script src="./sigma.js/plugins/sigma.parsers.json/sigma.parsers.json.js"></script>
     <script src="./sigma.js/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 
     <meta charset="UTF-8">
-    <title>Demo</title>
+    <title>계유정난</title>
     <style>
         body {
             font: 10px sans-serif;
             background-color:#f8f8f8;
         }
-        #graph-container {
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            position: absolute;
-        }
-
-        .sigma-tooltip {
-            max-width: 240px;
-            max-height: 280px;
-            background-color: rgb(249, 247, 237);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            border-radius: 6px;
-        }
-
-        .sigma-tooltip-header {
-            font-variant: small-caps;
-            font-size: 120%;
-            color: #437356;
-            border-bottom: 1px solid #aac789;
-            padding: 10px;
-        }
-
-        .sigma-tooltip-body {
-            padding: 10px;
-        }
-
-        .sigma-tooltip-body th {
-            color: #999;
-            text-align: left;
-        }
-
-        .sigma-tooltip-footer {
-            padding: 10px;
-            border-top: 1px solid #aac789;
-        }
-
-        .sigma-tooltip > .arrow {
-            border-width: 10px;
-            position: absolute;
-            display: block;
-            width: 0;
-            height: 0;
-            border-color: transparent;
-            border-style: solid;
-        }
-
-        .sigma-tooltip.top {
-            margin-top: -12px;
-        }
-        .sigma-tooltip.top > .arrow {
-            left: 50%;
-            bottom: -10px;
-            margin-left: -10px;
-            border-top-color: rgb(249, 247, 237);
-            border-bottom-width: 0;
-        }
-
-        .sigma-tooltip.bottom {
-            margin-top: 12px;
-        }
-        .sigma-tooltip.bottom > .arrow {
-            left: 50%;
-            top: -10px;
-            margin-left: -10px;
-            border-bottom-color: rgb(249, 247, 237);
-            border-top-width: 0;
-        }
-
-        .sigma-tooltip.left {
-            margin-left: -12px;
-        }
-        .sigma-tooltip.left > .arrow {
-            top: 50%;
-            right: -10px;
-            margin-top: -10px;
-            border-left-color: rgb(249, 247, 237);
-            border-right-width: 0;
-        }
-
-        .sigma-tooltip.right {
-            margin-left: 12px;
-        }
-        .sigma-tooltip.right > .arrow {
-            top: 50%;
-            left: -10px;
-            margin-top: -10px;
-            border-right-color: rgb(249, 247, 237);
-            border-left-width: 0;
-        }
     </style>
 </head>
  <div>
-<h1 align="center">Demo</h1>
+<h1 align="center">네트워크 사이언스 관점으로 본 계유정난<br>(인물간의 커뮤니케이션 네트워크)</h1>
  </div>
 
 <div id="container">
-    <h1 style="position: absolute; top: 10%;">Demo version </h1>
+    <h1 style="position: absolute; top: 10%;">계유정난 전 1개월 </h1>
     <style>
         #graph-container {
-            width:100%;
+            width:50%;
             height:80%;
             border:1px solid;
             top: 10%;
@@ -173,6 +82,22 @@
     <div id="graph-container"></div>
 </div>
 
+<div id="container2">
+    <h1 style="position: absolute; left:51%; top: 10%;">계유정난 후 1개월 </h1>
+    <style>
+        #graph-container2 {
+            width:50%;
+            height:80%;
+            border:1px solid;
+            top: 10%;
+            bottom: 0;
+            left: 50%;
+            right: 0;
+            position: absolute;
+        }
+    </style>
+    <div id="graph-container2"></div>
+</div>
 
 <script>
     sigma.classes.graph.addMethod('neighbors', function(nodeId) {
@@ -185,29 +110,26 @@
 
         return neighbors;
     });
-
-    sigma.parsers.json('demo.json', {
+    sigma.parsers.json('before.json', {
         container: 'graph-container'
     },
         function(s) {
-
             var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
 
-            // dragListener.bind('startdrag', function(event) {
-            //     console.log(event);
-            // });
-            // dragListener.bind('drag', function(event) {
-            //     console.log(event);
-            // });
-            // dragListener.bind('drop', function(event) {
-            //     console.log(event);
-            // });
-            // dragListener.bind('dragend', function(event) {
-            //     console.log(event);
-            // });
+            dragListener.bind('startdrag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drop', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('dragend', function(event) {
+                console.log(event);
+            });
             // We first need to save the original colors of our
             // nodes and edges, like this:
-
             s.graph.nodes().forEach(function(n) {
                 n.originalColor = n.color;
             });
@@ -259,55 +181,89 @@
 
                 // Same as in the previous event:
                 s.refresh();
-            })
-            var config = {
-                node: {
-                    show: 'hovers',
-                    hide: 'hovers',
-                    cssClass: 'sigma-tooltip',
-                    position: 'top',
-                    //autoadjust: true,
-                    template:
-                        '<div class="arrow"></div>' +
-                        ' <div class="sigma-tooltip-header">{{label}}</div>' +
-                        '  <div class="sigma-tooltip-body">' +
-                        '    <table>' +
-                        '      <tr><th>Name</th> <td>{{n.label}}</td></tr>' +
-                        '      <tr><th>Gender</th> <td>{{data.gender}}</td></tr>' +
-                        '      <tr><th>Age</th> <td>{{data.age}}</td></tr>' +
-                        '      <tr><th>City</th> <td>{{data.city}}</td></tr>' +
-                        '    </table>' +
-                        '  </div>' +
-                        '  <div class="sigma-tooltip-footer">Number of connections: {{degree}}</div>',
-                    renderer: function(node, template) {
-                        // The function context is s.graph
-                        node.degree = this.degree(node.id);
-
-                        // Returns an HTML string:
-                        return Mustache.render(template, node);
-
-                        // Returns a DOM Element:
-                        //var el = document.createElement('div');
-                        //return el.innerHTML = Mustache.render(template, node);
-                    }
-                }
-            };
-
-            var tooltips = sigma.plugins.tooltips(s, s.renderers[0], config);
-            console.log(tooltips)
-
-            tooltips.bind('shown', function(event) {
-                console.log('tooltip shown', event);
-            });
-
-            tooltips.bind('hidden', function(event) {
-                console.log('tooltip hidden', event);
             });
     }
     );
 
 </script>
+<script>
 
+    sigma.parsers.json('after.json', {
+            container: 'graph-container2'
+        },
+
+        function(s) {
+            var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
+
+            dragListener.bind('startdrag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drag', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('drop', function(event) {
+                console.log(event);
+            });
+            dragListener.bind('dragend', function(event) {
+                console.log(event);
+            });
+            // We first need to save the original colors of our
+            // nodes and edges, like this:
+            s.graph.nodes().forEach(function(n) {
+                n.originalColor = n.color;
+            });
+            s.graph.edges().forEach(function(e) {
+                e.originalColor = e.color;
+            });
+
+            // When a node is clicked, we check for each node
+            // if it is a neighbor of the clicked one. If not,
+            // we set its color as grey, and else, it takes its
+            // original color.
+            // We do the same for the edges, and we only keep
+            // edges that have both extremities colored.
+            s.bind('clickNode', function(e) {
+                var nodeId = e.data.node.id,
+                    toKeep = s.graph.neighbors(nodeId);
+                toKeep[nodeId] = e.data.node;
+
+                s.graph.nodes().forEach(function(n) {
+                    if (toKeep[n.id])
+                        n.color = n.originalColor;
+                    else
+                        n.color = '#eee';
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    if (toKeep[e.source] && toKeep[e.target])
+                        e.color = e.originalColor;
+                    else
+                        e.color = '#eee';
+                });
+
+                // Since the data has been modified, we need to
+                // call the refresh method to make the colors
+                // update effective.
+                s.refresh();
+            });
+
+            // When the stage is clicked, we just color each
+            // node and edge with its original color.
+            s.bind('clickStage', function(e) {
+                s.graph.nodes().forEach(function(n) {
+                    n.color = n.originalColor;
+                });
+
+                s.graph.edges().forEach(function(e) {
+                    e.color = e.originalColor;
+                });
+
+                // Same as in the previous event:
+                s.refresh();
+            });
+        }
+    );
+</script>
 <style>
 
     /* basic positioning */
@@ -334,11 +290,11 @@
 </style>
     <div class = 'ul'>
         <ul class="legend">
-            <li><span class="one"></span>N1 </li>
-            <li><span class="two"></span> N2 </li>
-            <li><span class="three"></span> N3 </li>
-            <li><span class="four"></span> N4 </li>
-            <li><span class="five"></span> N5 </li>
+            <li><span class="one"></span> 안평대군파(숙청) </li>
+            <li><span class="two"></span> 안평대군파(처벌) </li>
+            <li><span class="three"></span> 중립 </li>
+            <li><span class="four"></span> 정난공신 </li>
+            <li><span class="five"></span> 사육신 </li>
         </ul>
     </div>
 
